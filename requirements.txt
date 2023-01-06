@@ -2,3 +2,6 @@ numpy
 opencv-python
 tensorflow
 matplotlib
+tk
+plib3.gui
+pyinstaller
