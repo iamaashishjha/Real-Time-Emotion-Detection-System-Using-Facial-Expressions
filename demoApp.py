@@ -20,83 +20,85 @@ from tensorflow.keras.preprocessing.image import ImageDataGenerator
 import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-
-
 # Creating object of tk class
 root = tk.Tk()
 
-# Creating object of class VideoCapture with webcam index
-root.cap = cv2.VideoCapture(0)
+def loadDefaults():
 
-# Setting width and height
-width, height = 640, 480
-root.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-root.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+    # Creating object of class VideoCapture with webcam index
+    root.cap = cv2.VideoCapture(0)
 
-# Setting the title, window size, background color and disabling the resizing property
-root.title("Real Time Emotion Detection System")
-root.geometry("663x560")
-# root.resizable(True, True)
-root.resizable(False, False)
+    # Setting width and height
+    width, height = 640, 480
+    root.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+    root.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 
-root.configure(background = "sky blue")
+    # Setting the title, window size, background color and disabling the resizing property
+    root.title("Real Time Emotion Detection System")
+    root.geometry("663x560")
+    root.resizable(False, False)
 
-# Creating tkinter variables
-destPath = StringVar()
-imagePath = StringVar()
+    root.configure(background = "#F0F8FF")
 
-# command line argument
-ap = argparse.ArgumentParser()
-ap.add_argument("--mode",help="train/display")
-mode = ap.parse_args().mode
+    style = ttk.Style()
+    style.configure("my.TButton", background="lightblue", font=('Roboto Black',15), width=13)
 
-# Define data generators
-train_dir = 'data/train'
-val_dir = 'data/test'
+    # Creating tkinter variables
+    destPath = StringVar()
+    imagePath = StringVar()
 
-num_train = 28709
-num_val = 7178
-batch_size = 64
-num_epoch = 50
+    # command line argument
+    ap = argparse.ArgumentParser()
+    ap.add_argument("--mode",help="train/display")
+    mode = ap.parse_args().mode
 
-train_datagen = ImageDataGenerator(rescale=1./255)
-val_datagen = ImageDataGenerator(rescale=1./255)
+    # Define data generators
+    train_dir = 'data/train'
+    val_dir = 'data/test'
 
-train_generator = train_datagen.flow_from_directory(
-        train_dir,
-        target_size=(48,48),
-        batch_size=batch_size,
-        color_mode="grayscale",
-        class_mode='categorical')
+    num_train = 28709
+    num_val = 7178
+    batch_size = 64
+    num_epoch = 50
 
-validation_generator = val_datagen.flow_from_directory(
-        val_dir,
-        target_size=(48,48),
-        batch_size=batch_size,
-        color_mode="grayscale",
-        class_mode='categorical')
+    train_datagen = ImageDataGenerator(rescale=1./255)
+    val_datagen = ImageDataGenerator(rescale=1./255)
 
-# Create the model
-model = Sequential()
+    train_generator = train_datagen.flow_from_directory(
+            train_dir,
+            target_size=(48,48),
+            batch_size=batch_size,
+            color_mode="grayscale",
+            class_mode='categorical')
 
-model.add(Conv2D(32, kernel_size=(3, 3), activation='relu', input_shape=(48,48,1)))
-model.add(Conv2D(64, kernel_size=(3, 3), activation='relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
-model.add(Dropout(0.25))
+    validation_generator = val_datagen.flow_from_directory(
+            val_dir,
+            target_size=(48,48),
+            batch_size=batch_size,
+            color_mode="grayscale",
+            class_mode='categorical')
 
-model.add(Conv2D(128, kernel_size=(3, 3), activation='relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
-model.add(Conv2D(128, kernel_size=(3, 3), activation='relu'))
-model.add(MaxPooling2D(pool_size=(2, 2)))
-model.add(Dropout(0.25))
+    # Create the model
+    model = Sequential()
 
-model.add(Flatten())
-model.add(Dense(1024, activation='relu'))
-model.add(Dropout(0.5))
-model.add(Dense(7, activation='softmax'))
+    model.add(Conv2D(32, kernel_size=(3, 3), activation='relu', input_shape=(48,48,1)))
+    model.add(Conv2D(64, kernel_size=(3, 3), activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.25))
+
+    model.add(Conv2D(128, kernel_size=(3, 3), activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Conv2D(128, kernel_size=(3, 3), activation='relu'))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.25))
+
+    model.add(Flatten())
+    model.add(Dense(1024, activation='relu'))
+    model.add(Dropout(0.5))
+    model.add(Dense(7, activation='softmax'))
 
 # Defining CreateWidgets() function to create necessary tkinter widgets
-def createwidgets():
+def createWidgets():
     root.columnconfigure(4, weight=1)
     root.rowconfigure(4, weight=1)
 
@@ -106,14 +108,59 @@ def createwidgets():
     root.CAMBTN = ttk.Button(root, text="STOP CAMERA", command=StopCAM, style="my.TButton")
     root.CAMBTN.grid(row=5, column=4, pady=10, padx=10, sticky="nsew")
 
-    style = ttk.Style()
-    style.configure("my.TButton", background="lightblue", font=('Comic Sans MS',15), width=13)
-
     # Calling ShowFeed() function
     ShowFeed()
 
 # Defining ShowFeed() function to display webcam feed in the cameraLabel;
 def ShowFeed():
+    # Capturing frame by frame
+    ret, frame = root.cap.read()
+    if ret:
+        # Flipping the frame vertically
+        frame = cv2.flip(frame, 1)
+        # Displaying date and time on the feed
+        cv2.putText(frame, datetime.now().strftime('%d/%m/%Y %H:%M:%S'), (20,30), cv2.FONT_HERSHEY_DUPLEX, 0.5, (0,255,255))
+        # Changing the frame color from BGR to RGB
+        cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+        # Creating an image memory from the above frame exporting array interface
+        videoImg = Image.fromarray(cv2image)
+        # Creating object of PhotoImage() class to display the frame
+        imgtk = ImageTk.PhotoImage(image = videoImg)
+        # Configuring the label to display the frame
+        root.cameraLabel.configure(image=imgtk)
+        # Keeping a reference
+        root.cameraLabel.imgtk = imgtk
+        # Calling the function after 10 milliseconds
+        root.cameraLabel.after(10, ShowFeed)
+    else:
+        # Configuring the label to display the frame
+        root.cameraLabel.configure(image='')
+
+# Defining ShowFeed() function to display webcam feed in the cameraLabel;
+def ShowEmotionFeed():
+    # Capturing frame by frame
+    ret, frame = root.cap.read()
+    # if ret:
+    #     # Flipping the frame vertically
+    #     frame = cv2.flip(frame, 1)
+    #     # Displaying date and time on the feed
+    #     cv2.putText(frame, datetime.now().strftime('%d/%m/%Y %H:%M:%S'), (20,30), cv2.FONT_HERSHEY_DUPLEX, 0.5, (0,255,255))
+    #     # Changing the frame color from BGR to RGB
+    #     cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+    #     # Creating an image memory from the above frame exporting array interface
+    #     videoImg = Image.fromarray(cv2image)
+    #     # Creating object of PhotoImage() class to display the frame
+    #     imgtk = ImageTk.PhotoImage(image = videoImg)
+    #     # Configuring the label to display the frame
+    #     root.cameraLabel.configure(image=imgtk)
+    #     # Keeping a reference
+    #     root.cameraLabel.imgtk = imgtk
+    #     # Calling the function after 10 milliseconds
+    #     root.cameraLabel.after(10, ShowFeed)
+    # else:
+    #     # Configuring the label to display the frame
+    #     root.cameraLabel.configure(image='')
+
     model.load_weights('model.h5')
     # Capturing frame by frame
     ret, frame = root.cap.read()
@@ -157,7 +204,6 @@ def ShowFeed():
 def StopCAM():
     # Stopping the camera using release() method of cv2.VideoCapture()
     root.cap.release()
-    
     root.columnconfigure(4, weight=1)
     root.rowconfigure(4, weight=1)
 
@@ -168,9 +214,7 @@ def StopCAM():
     # Displaying text message in the camera label
     root.cameraLabel.config(text="OFF CAM", font=('Comic Sans MS',70), padding=10, justify="center")
 
-    style = ttk.Style()
-    style.configure("my.TButton", background="lightblue", font=('Comic Sans MS',15))
-
+# Defining StartCAM() to start WEBCAM Preview
 def StartCAM():
     # Creating object of class VideoCapture with webcam index
     root.cap = cv2.VideoCapture(0)
@@ -185,9 +229,6 @@ def StartCAM():
     root.CAMBTN = ttk.Button(root, text="STOP CAMERA", command=StopCAM, style="my.TButton")
     root.CAMBTN.grid(row=5, column=4, pady=10, padx=10, sticky="nsew")
 
-    style = ttk.Style()
-    style.configure("my.TButton", background="lightblue", font=('Comic Sans MS',15), width=13)
-
     # Removing text message from the camera label
     root.cameraLabel.config(text="")
 
@@ -201,6 +242,8 @@ def on_mouse(event, x, y, flags, param):
         cv2.destroyAllWindows()
         
 
+if __name__ == "__main__":
+    loadDefaults()
+    createWidgets()
+    root.mainloop()
 
-createwidgets()
-root.mainloop()
