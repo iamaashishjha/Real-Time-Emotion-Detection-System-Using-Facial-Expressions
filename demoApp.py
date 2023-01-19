@@ -212,7 +212,7 @@ def StopCAM():
     root.CAMBTN.grid(row=5, column=4, padx=10, pady=10, sticky="nsew")
 
     # Displaying text message in the camera label
-    root.cameraLabel.config(text="OFF CAM", font=('Comic Sans MS',70), padding=10, justify="center")
+    root.cameraLabel.config(text="OFF CAM", font=('Roboto Black',70), padding=10, justify="center")
 
 # Defining StartCAM() to start WEBCAM Preview
 def StartCAM():
