@@ -18,6 +18,12 @@ ap = argparse.ArgumentParser()
 ap.add_argument("--mode",help="train/display")
 mode = ap.parse_args().mode
 
+def on_mouse(event, x, y, flags, param):
+    if event == cv2.EVENT_LBUTTONDOWN:
+        # Release the webcam and close all windows when the left mouse button is clicked
+        cap.release()
+        cv2.destroyAllWindows()
+
 # plots accuracy and loss curves
 def plot_model_history(model_history):
     """
@@ -116,6 +122,12 @@ elif mode == "display":
 
     # start the webcam feed
     cap = cv2.VideoCapture(0)
+    
+    # Define the window to display the webcam feed
+    cv2.namedWindow("Webcam Feed", cv2.WINDOW_NORMAL)
+    
+    # Register the mouse callback function
+    cv2.setMouseCallback("Webcam Feed", on_mouse)
 
     while True:
         # Find haar cascade to draw bounding box around face
@@ -134,9 +146,29 @@ elif mode == "display":
             maxindex = int(np.argmax(prediction))
             cv2.putText(frame, emotion_dict[maxindex], (x+20, y-60), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
 
-        cv2.imshow('Video', cv2.resize(frame,(1600,960),interpolation = cv2.INTER_CUBIC))
+        # cv2.imshow('Video', cv2.resize(frame,(1600,960),interpolation = cv2.INTER_CUBIC))
+        # Display the webcam feed in the defined window
+        resizedFrame = cv2.resize(frame,(1600,960),interpolation = cv2.INTER_CUBIC)
+        # Define the ROI (region of interest) for the webcam feed
+        # roi = cv2.Rect(x, y, width, height)
+        # webcam_feed = frame[roi.y:roi.y+roi.height, roi.x:roi.x+roi.width]
+        cv2.imshow("Webcam Feed", resizedFrame)
+        # cv2.imshow("Webcam Feed", webcam_feed)
+        # Press 'r' to select the ROI
+        if cv2.waitKey(1) & 0xFF == ord('r'):
+            # Select the ROI
+            x, y, width, height = cv2.selectROI("Webcam Feed", frame)
+
+            # Crop the webcam frame
+            roi = frame[y:y + height, x:x + width]
+
+            # Show the cropped image
+            cv2.imshow("ROI", roi)
         if cv2.waitKey(1) & 0xFF == ord('q'):
             break
+            cap.release()
+            cv2.destroyWindow("Webcam Feed")
 
     cap.release()
     cv2.destroyAllWindows()
+    
