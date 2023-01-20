@@ -23,79 +23,78 @@ os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 # Creating object of tk class
 root = tk.Tk()
 
-def loadDefaults():
+# Create the model
+model = Sequential()
+# Creating object of class VideoCapture with webcam index
+root.cap = cv2.VideoCapture(0)
 
-    # Creating object of class VideoCapture with webcam index
-    root.cap = cv2.VideoCapture(0)
+# Setting width and height
+width, height = 640, 480
+root.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+root.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 
-    # Setting width and height
-    width, height = 640, 480
-    root.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-    root.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+# Setting the title, window size, background color and disabling the resizing property
+root.title("Real Time Emotion Detection System")
+root.geometry("663x560")
+root.resizable(False, False)
 
-    # Setting the title, window size, background color and disabling the resizing property
-    root.title("Real Time Emotion Detection System")
-    root.geometry("663x560")
-    root.resizable(False, False)
+root.configure(background = "#F0F8FF")
 
-    root.configure(background = "#F0F8FF")
+style = ttk.Style()
+style.configure("my.TButton", background="lightblue", font=('Roboto Black',15), width=13)
 
-    style = ttk.Style()
-    style.configure("my.TButton", background="lightblue", font=('Roboto Black',15), width=13)
+# Creating tkinter variables
+destPath = StringVar()
+imagePath = StringVar()
 
-    # Creating tkinter variables
-    destPath = StringVar()
-    imagePath = StringVar()
+# command line argument
+ap = argparse.ArgumentParser()
+ap.add_argument("--mode",help="train/display")
+mode = ap.parse_args().mode
 
-    # command line argument
-    ap = argparse.ArgumentParser()
-    ap.add_argument("--mode",help="train/display")
-    mode = ap.parse_args().mode
+# Define data generators
+train_dir = 'data/train'
+val_dir = 'data/test'
 
-    # Define data generators
-    train_dir = 'data/train'
-    val_dir = 'data/test'
+num_train = 28709
+num_val = 7178
+batch_size = 64
+num_epoch = 50
 
-    num_train = 28709
-    num_val = 7178
-    batch_size = 64
-    num_epoch = 50
+train_datagen = ImageDataGenerator(rescale=1./255)
+val_datagen = ImageDataGenerator(rescale=1./255)
 
-    train_datagen = ImageDataGenerator(rescale=1./255)
-    val_datagen = ImageDataGenerator(rescale=1./255)
+train_generator = train_datagen.flow_from_directory(
+        train_dir,
+        target_size=(48,48),
+        batch_size=batch_size,
+        color_mode="grayscale",
+        class_mode='categorical')
 
-    train_generator = train_datagen.flow_from_directory(
-            train_dir,
-            target_size=(48,48),
-            batch_size=batch_size,
-            color_mode="grayscale",
-            class_mode='categorical')
+validation_generator = val_datagen.flow_from_directory(
+        val_dir,
+        target_size=(48,48),
+        batch_size=batch_size,
+        color_mode="grayscale",
+        class_mode='categorical')
 
-    validation_generator = val_datagen.flow_from_directory(
-            val_dir,
-            target_size=(48,48),
-            batch_size=batch_size,
-            color_mode="grayscale",
-            class_mode='categorical')
 
-    # Create the model
-    model = Sequential()
 
-    model.add(Conv2D(32, kernel_size=(3, 3), activation='relu', input_shape=(48,48,1)))
-    model.add(Conv2D(64, kernel_size=(3, 3), activation='relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.25))
+model.add(Conv2D(32, kernel_size=(3, 3), activation='relu', input_shape=(48,48,1)))
+model.add(Conv2D(64, kernel_size=(3, 3), activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Dropout(0.25))
 
-    model.add(Conv2D(128, kernel_size=(3, 3), activation='relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Conv2D(128, kernel_size=(3, 3), activation='relu'))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.25))
+model.add(Conv2D(128, kernel_size=(3, 3), activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Conv2D(128, kernel_size=(3, 3), activation='relu'))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Dropout(0.25))
 
-    model.add(Flatten())
-    model.add(Dense(1024, activation='relu'))
-    model.add(Dropout(0.5))
-    model.add(Dense(7, activation='softmax'))
+model.add(Flatten())
+model.add(Dense(1024, activation='relu'))
+model.add(Dropout(0.5))
+model.add(Dense(7, activation='softmax'))
 
 # Defining CreateWidgets() function to create necessary tkinter widgets
 def createWidgets():
@@ -138,67 +137,41 @@ def ShowFeed():
 
 # Defining ShowFeed() function to display webcam feed in the cameraLabel;
 def ShowEmotionFeed():
-    # Capturing frame by frame
-    ret, frame = root.cap.read()
-    # if ret:
-    #     # Flipping the frame vertically
-    #     frame = cv2.flip(frame, 1)
-    #     # Displaying date and time on the feed
-    #     cv2.putText(frame, datetime.now().strftime('%d/%m/%Y %H:%M:%S'), (20,30), cv2.FONT_HERSHEY_DUPLEX, 0.5, (0,255,255))
-    #     # Changing the frame color from BGR to RGB
-    #     cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
-    #     # Creating an image memory from the above frame exporting array interface
-    #     videoImg = Image.fromarray(cv2image)
-    #     # Creating object of PhotoImage() class to display the frame
-    #     imgtk = ImageTk.PhotoImage(image = videoImg)
-    #     # Configuring the label to display the frame
-    #     root.cameraLabel.configure(image=imgtk)
-    #     # Keeping a reference
-    #     root.cameraLabel.imgtk = imgtk
-    #     # Calling the function after 10 milliseconds
-    #     root.cameraLabel.after(10, ShowFeed)
-    # else:
-    #     # Configuring the label to display the frame
-    #     root.cameraLabel.configure(image='')
-
     model.load_weights('model.h5')
-    # Capturing frame by frame
-    ret, frame = root.cap.read()
     # prevents openCL usage and unnecessary logging messages
     cv2.ocl.setUseOpenCL(False)
-    
     # dictionary which assigns each label an emotion (alphabetical order)
     emotion_dict = {0: "Angry", 1: "Disgusted", 2: "Fearful", 3: "Happy", 4: "Neutral", 5: "Sad", 6: "Surprised"}
-    
     while True:
         # Find haar cascade to draw bounding box around face
         ret, frame = root.cap.read()
-        if not ret:
+        if ret:
+            frame = cv2.flip(frame, 1)
+            facecasc = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
+            cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+            faces = facecasc.detectMultiScale(cv2image,scaleFactor=1.3, minNeighbors=5)
+
+            for (x, y, w, h) in faces:
+                cv2.rectangle(frame, (x, y-50), (x+w, y+h+10), (255, 0, 0), 2)
+                roi_gray = cv2image[y:y + h, x:x + w]
+                cropped_img = np.expand_dims(np.expand_dims(cv2.resize(roi_gray, (48, 48)), -1), 0)
+                prediction = model.predict(cropped_img)
+                maxindex = int(np.argmax(prediction))
+                cv2.putText(frame, emotion_dict[maxindex], (x+20, y-60), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
+
+            # Display the webcam feed in the defined window
+            # resizedFrame = cv2.resize(frame,(665,560),interpolation = cv2.INTER_CUBIC)
+            # cv2.imshow("Webcam Feed", resizedFrame)
+            videoImg = Image.fromarray(frame)
+            imgtk = ImageTk.PhotoImage(image = videoImg)
+            root.cameraLabel.configure(image=imgtk)
+            root.cameraLabel.imgtk = imgtk
+            root.cameraLabel.after(10, ShowEmotionFeed)
+        else:
             break
             # Configuring the label to display the frame
-            # root.cameraLabel.configure(image='')
-        
-        frame = cv2.flip(frame, 1)
-        facecasc = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
-        gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        faces = facecasc.detectMultiScale(gray,scaleFactor=1.3, minNeighbors=5)
-
-        for (x, y, w, h) in faces:
-            cv2.rectangle(frame, (x, y-50), (x+w, y+h+10), (255, 0, 0), 2)
-            roi_gray = gray[y:y + h, x:x + w]
-            cropped_img = np.expand_dims(np.expand_dims(cv2.resize(roi_gray, (48, 48)), -1), 0)
-            prediction = model.predict(cropped_img)
-            maxindex = int(np.argmax(prediction))
-            cv2.putText(frame, emotion_dict[maxindex], (x+20, y-60), cv2.FONT_HERSHEY_SIMPLEX, 1, (255, 255, 255), 2, cv2.LINE_AA)
-
-        # Display the webcam feed in the defined window
-        # resizedFrame = cv2.resize(frame,(665,560),interpolation = cv2.INTER_CUBIC)
-        # cv2.imshow("Webcam Feed", resizedFrame)
-        videoImg = Image.fromarray(frame)
-        imgtk = ImageTk.PhotoImage(image = videoImg)
-        root.cameraLabel.configure(image=imgtk)
-        root.cameraLabel.imgtk = imgtk
-        root.cameraLabel.after(10, ShowFeed)
+            root.cameraLabel.configure(image='')
+            
 
 # Defining StopCAM() to stop WEBCAM Preview
 def StopCAM():
@@ -243,7 +216,6 @@ def on_mouse(event, x, y, flags, param):
         
 
 if __name__ == "__main__":
-    loadDefaults()
     createWidgets()
     root.mainloop()
 
