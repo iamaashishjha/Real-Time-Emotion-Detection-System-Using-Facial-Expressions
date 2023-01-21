@@ -9,14 +9,11 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tkinter import *
+from tkinter import  ttk, *
 from PIL import Image, ImageTk
 from datetime import datetime
-# from tensorflow.keras.layers import Conv2D
-# from tensorflow.keras.layers import MaxPooling2D
-# from tkinter import messagebox, filedialog, ttk
 
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "0"
 
 # Creating object of tk class
 root = tk.Tk()
@@ -26,12 +23,12 @@ root.cap = cv2.VideoCapture(0)
 
 # Setting width and height
 width, height = 640, 480
-width_1, height_1 = 640, 480
 root.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
 root.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 
 # Setting the title, window size, background color and disabling the resizing property
 root.title("Real Time Emotion Detection System")
+root.wm_iconbitmap("imgs/icon.png")
 root.geometry("640x480")
 root.resizable(False, False)
 
@@ -85,21 +82,7 @@ validation_generator = val_datagen.flow_from_directory(
 # Create the model
 model = Sequential()
 
-model.add(Conv2D(32, kernel_size=(3, 3), activation="relu", input_shape=(48, 48, 1)))
-model.add(Conv2D(64, kernel_size=(3, 3), activation="relu"))
-model.add(MaxPooling2D(pool_size=(2, 2)))
-model.add(Dropout(0.25))
 
-model.add(Conv2D(128, kernel_size=(3, 3), activation="relu"))
-model.add(MaxPooling2D(pool_size=(2, 2)))
-model.add(Conv2D(128, kernel_size=(3, 3), activation="relu"))
-model.add(MaxPooling2D(pool_size=(2, 2)))
-model.add(Dropout(0.25))
-
-model.add(Flatten())
-model.add(Dense(1024, activation="relu"))
-model.add(Dropout(0.5))
-model.add(Dense(7, activation="softmax"))
 
 # Defining CreateWidgets() function to create necessary tkinter widgets
 def createWidgets():
@@ -112,11 +95,6 @@ def createWidgets():
     )
     root.CAMBTN.grid(row=5, column=4, pady=10, padx=10, sticky="nsew")
     
-    # root.CAMBTN = ttk.Button(
-    #     root, text="Detect Face", command=StartFaceCam, style="my.TButton"
-    # )
-    # root.CAMBTN.grid(row=6, column=4, pady=10, padx=10, sticky="nsew")
-
     # Calling ShowFeed() function
     ShowEmotionFeed()
 
@@ -211,7 +189,6 @@ def ShowEmotionFeed():
                 2,
                 cv2.LINE_AA,
             )
-
         # Display the resulting frame
         videoImg = Image.fromarray(frame)
         # Creating object of PhotoImage() class to display the frame
@@ -232,11 +209,6 @@ def StopCam():
     root.cap.release()
     screen_width = root.winfo_screenwidth()
     width, height = root.geometry().split("x")
-    
-    # frame = ttk.Frame(root)
-    # frame.grid(row=4, column=4, sticky="nsew")
-    # frame.columnconfigure(0, weight=1)
-    # frame.rowconfigure(0, weight=1)
 
     # Configuring the CAMBTN to display accordingly
     root.CAMBTN = ttk.Button(
@@ -259,9 +231,9 @@ def StartCam():
     # Creating object of class VideoCapture with webcam index
     root.cap = cv2.VideoCapture(0)
     # Setting width and height
-    # width_1, height_1 = 640, 480
-    root.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width_1)
-    root.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height_1)
+    # width, height = 640, 480
+    root.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+    root.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 
     # Configuring the CAMBTN to display accordingly
     root.CAMBTN = ttk.Button(
@@ -284,5 +256,20 @@ def on_mouse(event, x, y, flags, param):
 
 
 if __name__ == "__main__":
+    model.add(Conv2D(32, kernel_size=(3, 3), activation="relu", input_shape=(48, 48, 1)))
+    model.add(Conv2D(64, kernel_size=(3, 3), activation="relu"))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.25))
+
+    model.add(Conv2D(128, kernel_size=(3, 3), activation="relu"))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Conv2D(128, kernel_size=(3, 3), activation="relu"))
+    model.add(MaxPooling2D(pool_size=(2, 2)))
+    model.add(Dropout(0.25))
+
+    model.add(Flatten())
+    model.add(Dense(1024, activation="relu"))
+    model.add(Dropout(0.5))
+    model.add(Dense(7, activation="softmax"))
     createWidgets()
     root.mainloop()
