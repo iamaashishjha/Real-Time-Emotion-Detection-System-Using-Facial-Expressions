@@ -162,7 +162,6 @@ def ShowEmotionFeed():
             (0, 255, 255),
         )
         # Changing the frame color from BGR to RGB
-        # cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
         cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         faces = facecasc.detectMultiScale(cv2image, scaleFactor=1.3, minNeighbors=5)
 
