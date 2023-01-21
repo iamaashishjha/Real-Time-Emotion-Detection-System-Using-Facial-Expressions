@@ -3,20 +3,18 @@ import numpy as np
 import argparse
 import matplotlib.pyplot as plt
 import os
-from tensorflow import keras
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.layers import Dense, Dropout, Flatten
-from tensorflow.keras.layers import Conv2D
-from tensorflow.keras.optimizers import Adam
 import tkinter as tk
+from tensorflow import keras
+from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.models import Sequential
+from tensorflow.keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
+from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tkinter import *
+from tkinter import messagebox, filedialog, ttk
 from PIL import Image, ImageTk
 from datetime import datetime
-from tkinter import messagebox, filedialog, ttk
-from tensorflow.keras.layers import MaxPooling2D
-from tensorflow.keras.preprocessing.image import ImageDataGenerator
 
-os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
+os.environ["TF_CPP_MIN_LOG_LEVEL"] = "0"
 
 # Creating object of tk class
 root = tk.Tk()
@@ -26,12 +24,12 @@ root.cap = cv2.VideoCapture(0)
 
 # Setting width and height
 width, height = 640, 480
-width_1, height_1 = 640, 480
 root.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
 root.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 
 # Setting the title, window size, background color and disabling the resizing property
 root.title("Real Time Emotion Detection System")
+root.wm_iconbitmap("imgs/icon.png")
 root.geometry("640x480")
 root.resizable(False, False)
 
@@ -84,7 +82,6 @@ validation_generator = val_datagen.flow_from_directory(
 
 # Create the model
 model = Sequential()
-
 model.add(Conv2D(32, kernel_size=(3, 3), activation="relu", input_shape=(48, 48, 1)))
 model.add(Conv2D(64, kernel_size=(3, 3), activation="relu"))
 model.add(MaxPooling2D(pool_size=(2, 2)))
@@ -112,11 +109,6 @@ def createWidgets():
     )
     root.CAMBTN.grid(row=5, column=4, pady=10, padx=10, sticky="nsew")
     
-    # root.CAMBTN = ttk.Button(
-    #     root, text="Detect Face", command=StartFaceCam, style="my.TButton"
-    # )
-    # root.CAMBTN.grid(row=6, column=4, pady=10, padx=10, sticky="nsew")
-
     # Calling ShowFeed() function
     ShowEmotionFeed()
 
@@ -139,7 +131,7 @@ def ShowFeed():
         # Changing the frame color from BGR to RGB
         cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
         # Creating an image memory from the above frame exporting array interface
-        videoImg = Image.fromarray(cv2image)
+        videoImg = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         # Creating object of PhotoImage() class to display the frame
         imgtk = ImageTk.PhotoImage(image=videoImg)
         # Configuring the label to display the frame
@@ -151,7 +143,6 @@ def ShowFeed():
     else:
         # Configuring the label to display the frame
         root.cameraLabel.configure(image="")
-
 
 # Defining ShowEmotionFeed() function to display webcam feed in the cameraLabel;
 def ShowEmotionFeed():
@@ -212,9 +203,8 @@ def ShowEmotionFeed():
                 2,
                 cv2.LINE_AA,
             )
-
         # Display the resulting frame
-        videoImg = Image.fromarray(frame)
+        videoImg = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         # Creating object of PhotoImage() class to display the frame
         imgtk = ImageTk.PhotoImage(image=videoImg)
         # Configuring the label to display the frame
@@ -227,62 +217,12 @@ def ShowEmotionFeed():
         # Configuring the label to display the frame
         root.cameraLabel.configure(image="")
 
-
-# Defining ShowFaceFeed() function to display webcam feed in the cameraLabel;
-def ShowFaceFeed():
-    # Stop Previous Camera
-    StopCam()
-    # Capturing frame by frame
-    ret, frame = root.cap.read()
-    # Load the Haar cascade classifier
-    classifier = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
-    if ret:
-        # Flipping the frame vertically
-        frame = cv2.flip(frame, 1)
-        # Displaying date and time on the feed
-        cv2.putText(
-            frame,
-            datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-            (20, 30),
-            cv2.FONT_HERSHEY_DUPLEX,
-            0.5,
-            (0, 255, 255),
-        )
-        # Changing the frame color from BGR to RGB
-        cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
-        faces = classifier.detectMultiScale(cv2image)
-        # Creating an image memory from the above frame exporting array interface
-        # Draw a rectangle around the faces
-        for (x, y, w, h) in faces:
-            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
-
-        # Display the resulting frame
-        # cv2.imshow('Video', frame)
-        videoImg = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
-        # Creating object of PhotoImage() class to display the frame
-        imgtk = ImageTk.PhotoImage(image=videoImg)
-        # Configuring the label to display the frame
-        root.cameraLabel.configure(image=imgtk)
-        # Keeping a reference
-        root.cameraLabel.imgtk = imgtk
-        # Calling the function after 10 milliseconds
-        root.cameraLabel.after(10, ShowFaceFeed)
-    else:
-        # Configuring the label to display the frame
-        root.cameraLabel.configure(image="")
-
-
 # Defining StopCam() to stop WEBCAM Preview
 def StopCam():
     # Stopping the camera using release() method of cv2.VideoCapture()
     root.cap.release()
     screen_width = root.winfo_screenwidth()
     width, height = root.geometry().split("x")
-    
-    # frame = ttk.Frame(root)
-    # frame.grid(row=4, column=4, sticky="nsew")
-    # frame.columnconfigure(0, weight=1)
-    # frame.rowconfigure(0, weight=1)
 
     # Configuring the CAMBTN to display accordingly
     root.CAMBTN = ttk.Button(
@@ -300,29 +240,7 @@ def StopCam():
     # root.cameraLabel.pack(fill="both", expand=True)
     root.cameraLabel.place(relx=0.5, rely=0.5, anchor="center")
 
-
 # Defining StartCam() to start WEBCAM Preview
-def StartCam():
-    # Creating object of class VideoCapture with webcam index
-    root.cap = cv2.VideoCapture(0)
-    # Setting width and height
-    # width_1, height_1 = 640, 480
-    root.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width_1)
-    root.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height_1)
-
-    # Configuring the CAMBTN to display accordingly
-    root.CAMBTN = ttk.Button(
-        root, text="STOP CAMERA", command=StopCam, style="my.TButton"
-    )
-    root.CAMBTN.grid(row=5, column=4, pady=10, padx=10, sticky="nsew")
-
-    # Removing text message from the camera label
-    root.cameraLabel.config(text="")
-
-    # Calling the ShowFeed() Function
-    ShowFeed()
-
-
 # Defining StartEmotionCam() to start WEBCAM Preview
 def StartEmotionCam():
     # Stop Previous Camera
@@ -347,38 +265,16 @@ def StartEmotionCam():
     # Calling the ShowFeed() Function
     ShowEmotionFeed()
     
-# Defining StartEmotionCam() to start WEBCAM Preview
-def StartFaceCam():
-
-    # Stop Previous Camera
-    StopCam()
-    # Creating object of class VideoCapture with webcam index
-    root.cap = cv2.VideoCapture(0)
-    # Setting width and height
-    # width_1, height_1 = 640, 480
-    root.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width_1)
-    root.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height_1)
-
-    # Configuring the CAMBTN to display accordingly
-    root.CAMBTN = ttk.Button(
-        root, text="Stop Camera", command=StopCam, style="my.TButton"
-    )
-    root.CAMBTN.grid(row=5, column=4, pady=10, padx=10, sticky="nsew")
-
-    # Removing text message from the camera label
-    root.cameraLabel.config(text="")
-
-    # Calling the ShowFeed() Function
-    ShowFaceFeed()
-
-
 def on_mouse(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:
         # Release the webcam and close all windows when the left mouse button is clicked
         root.cap.release()
         cv2.destroyAllWindows()
 
-
 if __name__ == "__main__":
+    
+    
     createWidgets()
     root.mainloop()
+    
+    
