@@ -1,25 +1,20 @@
 import cv2
-import tkinter as tk
-from tkinter import *
-from PIL import Image, ImageTk
-from datetime import datetime
-from tkinter import messagebox, filedialog, ttk
-
-# from tkinter import ttk
-
 import numpy as np
 import argparse
 import matplotlib.pyplot as plt
+import os
 from tensorflow import keras
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Flatten
 from tensorflow.keras.layers import Conv2D
 from tensorflow.keras.optimizers import Adam
-
-# from tf.keras.optimizers.legacy.Optimizer import Adam
+import tkinter as tk
+from tkinter import *
+from PIL import Image, ImageTk
+from datetime import datetime
+from tkinter import messagebox, filedialog, ttk
 from tensorflow.keras.layers import MaxPooling2D
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-import os
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2"
 
@@ -31,15 +26,19 @@ root.cap = cv2.VideoCapture(0)
 
 # Setting width and height
 width, height = 640, 480
+width_1, height_1 = 640, 480
 root.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
 root.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 
 # Setting the title, window size, background color and disabling the resizing property
 root.title("Real Time Emotion Detection System")
-root.geometry("663x560")
+root.geometry("640x480")
 root.resizable(False, False)
 
 root.configure(background="#F0F8FF")
+
+root.columnconfigure(4, weight=1)
+root.rowconfigure(4, weight=1)
 
 style = ttk.Style()
 style.configure(
@@ -83,7 +82,6 @@ validation_generator = val_datagen.flow_from_directory(
     class_mode="categorical",
 )
 
-
 # Create the model
 model = Sequential()
 
@@ -105,16 +103,12 @@ model.add(Dense(7, activation="softmax"))
 
 # Defining CreateWidgets() function to create necessary tkinter widgets
 def createWidgets():
-    root.columnconfigure(4, weight=1)
-    root.rowconfigure(4, weight=1)
-
     root.cameraLabel = ttk.Label(
         root, text="Camera Feed", background="steelblue", padding=10
     )
     root.cameraLabel.grid(row=4, column=4, sticky="nsew")
-
     root.CAMBTN = ttk.Button(
-        root, text="Stop Camera", command=StopCAM, style="my.TButton"
+        root, text="Stop Camera", command=StopCam, style="my.TButton"
     )
     root.CAMBTN.grid(row=5, column=4, pady=10, padx=10, sticky="nsew")
     
@@ -181,7 +175,6 @@ def ShowEmotionFeed():
     ret, frame = root.cap.read()
 
     # Load the Haar cascade classifier
-    # classifier = cv2.CascadeClassifier('haarcascade_frontalface_default.xml')
     facecasc = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
     if ret:
         # Flipping the frame vertically
@@ -196,8 +189,8 @@ def ShowEmotionFeed():
             (0, 255, 255),
         )
         # Changing the frame color from BGR to RGB
+        # cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
         cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-        # faces = classifier.detectMultiScale(cv2image)
         faces = facecasc.detectMultiScale(cv2image, scaleFactor=1.3, minNeighbors=5)
 
         # Draw a rectangle around the faces
@@ -238,7 +231,7 @@ def ShowEmotionFeed():
 # Defining ShowFaceFeed() function to display webcam feed in the cameraLabel;
 def ShowFaceFeed():
     # Stop Previous Camera
-    StopCAM()
+    StopCam()
     # Capturing frame by frame
     ret, frame = root.cap.read()
     # Load the Haar cascade classifier
@@ -279,51 +272,49 @@ def ShowFaceFeed():
         root.cameraLabel.configure(image="")
 
 
-# Defining StopCAM() to stop WEBCAM Preview
-def StopCAM():
+# Defining StopCam() to stop WEBCAM Preview
+def StopCam():
     # Stopping the camera using release() method of cv2.VideoCapture()
     root.cap.release()
-    root.columnconfigure(6, weight=1)
-    root.rowconfigure(4, weight=1)
+    screen_width = root.winfo_screenwidth()
+    width, height = root.geometry().split("x")
+    
+    # frame = ttk.Frame(root)
+    # frame.grid(row=4, column=4, sticky="nsew")
+    # frame.columnconfigure(0, weight=1)
+    # frame.rowconfigure(0, weight=1)
 
     # Configuring the CAMBTN to display accordingly
     root.CAMBTN = ttk.Button(
-        root, text="Show Emotion", command=StartEmotionCam, style="my.TButton"
+        root, text="Open Camera", command=StartEmotionCam, style="my.TButton"
     )
-    root.CAMBTN.grid(row=5, column=2, padx=10, pady=10, sticky="nsew")
-    
-    root.CAMBTN = ttk.Button(
-        root, text="Detect Face", command=StartFaceCam, style="my.TButton"
-    )
-    root.CAMBTN.grid(row=5, column=2, padx=10, pady=10, sticky="nsew")
-    
-    root.CAMBTN = ttk.Button(
-        root, text="Only Camera", command=StartCam, style="my.TButton"
-    )
-    root.CAMBTN.grid(row=5, column=2, padx=10, pady=10, sticky="nsew")
+    root.CAMBTN.grid(row=5, column=4, padx=10, pady=10, sticky="nsew")
     
     # Displaying text message in the camera label
     root.cameraLabel.config(
-        text="OFF CAM", font=("Roboto Black", 70), padding=10, justify="center"
+        text="Camera Switched Off", font=("Roboto Black", 50), padding=10, background="#F0F8FF", justify="center", wraplength = int(width)
     )
+    
+    # root.cameraLabel.grid(row=0, column=0, sticky="nsew")
+    # root.cameraLabel.grid(row=4, column=4, sticky="nsew")
+    # root.cameraLabel.pack(fill="both", expand=True)
+    root.cameraLabel.place(relx=0.5, rely=0.5, anchor="center")
 
 
 # Defining StartCam() to start WEBCAM Preview
 def StartCam():
     # Creating object of class VideoCapture with webcam index
     root.cap = cv2.VideoCapture(0)
-    root.columnconfigure(6, weight=1)
-    root.rowconfigure(4, weight=1)
     # Setting width and height
-    width_1, height_1 = 640, 480
+    # width_1, height_1 = 640, 480
     root.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width_1)
     root.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height_1)
 
     # Configuring the CAMBTN to display accordingly
     root.CAMBTN = ttk.Button(
-        root, text="STOP CAMERA", command=StopCAM, style="my.TButton"
+        root, text="STOP CAMERA", command=StopCam, style="my.TButton"
     )
-    root.CAMBTN.grid(row=5, column=6, pady=10, padx=10, sticky="nsew")
+    root.CAMBTN.grid(row=5, column=4, pady=10, padx=10, sticky="nsew")
 
     # Removing text message from the camera label
     root.cameraLabel.config(text="")
@@ -335,25 +326,20 @@ def StartCam():
 # Defining StartEmotionCam() to start WEBCAM Preview
 def StartEmotionCam():
     # Stop Previous Camera
-    StopCAM()
-    
-    
+    StopCam()
+
     # Creating object of class VideoCapture with webcam index
     root.cap = cv2.VideoCapture(0)
-    # root.columnconfigure(4, weight=1)
-    root.rowconfigure(4, weight=1)
-    root.columnconfigure(6, weight=1)
-    root.rowconfigure(4, weight=1)
     # Setting width and height
-    width_1, height_1 = 640, 480
+    # width_1, height_1 = 640, 480
     root.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width_1)
     root.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height_1)
 
     # Configuring the CAMBTN to display accordingly
     root.CAMBTN = ttk.Button(
-        root, text="Stop Camera", command=StopCAM, style="my.TButton"
+        root, text="Stop Camera", command=StopCam, style="my.TButton"
     )
-    root.CAMBTN.grid(row=5, column=6, pady=10, padx=10, sticky="nsew")
+    root.CAMBTN.grid(row=5, column=4, pady=10, padx=10, sticky="nsew")
 
     # Removing text message from the camera label
     root.cameraLabel.config(text="")
@@ -365,21 +351,19 @@ def StartEmotionCam():
 def StartFaceCam():
 
     # Stop Previous Camera
-    StopCAM()
+    StopCam()
     # Creating object of class VideoCapture with webcam index
     root.cap = cv2.VideoCapture(0)
-    root.columnconfigure(6, weight=1)
-    root.rowconfigure(4, weight=1)
     # Setting width and height
-    width_1, height_1 = 640, 480
+    # width_1, height_1 = 640, 480
     root.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width_1)
     root.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height_1)
 
     # Configuring the CAMBTN to display accordingly
     root.CAMBTN = ttk.Button(
-        root, text="Stop Camera", command=StopCAM, style="my.TButton"
+        root, text="Stop Camera", command=StopCam, style="my.TButton"
     )
-    root.CAMBTN.grid(row=5, column=6, pady=10, padx=10, sticky="nsew")
+    root.CAMBTN.grid(row=5, column=4, pady=10, padx=10, sticky="nsew")
 
     # Removing text message from the camera label
     root.cameraLabel.config(text="")

@@ -36,7 +36,8 @@ def plot_model_history(model_history):
     axs[0].set_title('Model Accuracy')
     axs[0].set_ylabel('Accuracy')
     axs[0].set_xlabel('Epoch')
-    axs[0].set_xticks(np.arange(1,len(model_history.history['accuracy'])+1),len(model_history.history['accuracy'])/10)
+    # axs[0].set_xticks(np.arange(1,len(model_history.history['accuracy'])+1),len(model_history.history['accuracy'])/10)
+    axs[0].set_xticks(np.arange(1,len(model_history.history['accuracy'])+1),np.arange(0, len(model_history.history['accuracy']), step=len(model_history.history['accuracy'])/10))
     axs[0].legend(['train', 'val'], loc='best')
     # summarize history for loss
     axs[1].plot(range(1,len(model_history.history['loss'])+1),model_history.history['loss'])
@@ -44,7 +45,9 @@ def plot_model_history(model_history):
     axs[1].set_title('Model Loss')
     axs[1].set_ylabel('Loss')
     axs[1].set_xlabel('Epoch')
-    axs[1].set_xticks(np.arange(1,len(model_history.history['loss'])+1),len(model_history.history['loss'])/10)
+    # axs[1].set_xticks(np.arange(1,len(model_history.history['loss'])+1),len(model_history.history['loss'])/10)
+    axs[1].set_xticks(np.arange(1,len(model_history.history['loss'])+1),np.arange(0, len(model_history.history['loss']), step=len(model_history.history['loss'])/10))
+    
     axs[1].legend(['train', 'val'], loc='best')
     fig.savefig('plot.png')
     plt.show()
@@ -107,7 +110,7 @@ if mode == "train":
             epochs=num_epoch,
             validation_data=validation_generator,
             validation_steps=num_val // batch_size)
-    plot_model_history(model_info)
+    # plot_model_history(model_info)
     model.save_weights('model.h5')
 
 # emotions will be displayed on your face from the webcam feed
