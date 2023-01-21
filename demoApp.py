@@ -249,7 +249,7 @@ def ShowFaceFeed():
             (0, 255, 255),
         )
         # Changing the frame color from BGR to RGB
-        cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+        cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         faces = classifier.detectMultiScale(cv2image)
         # Creating an image memory from the above frame exporting array interface
         # Draw a rectangle around the faces
@@ -258,7 +258,7 @@ def ShowFaceFeed():
 
         # Display the resulting frame
         # cv2.imshow('Video', frame)
-        videoImg = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
+        videoImg = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA))
         # Creating object of PhotoImage() class to display the frame
         imgtk = ImageTk.PhotoImage(image=videoImg)
         # Configuring the label to display the frame
