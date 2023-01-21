@@ -9,7 +9,8 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
-from tkinter import  ttk, *
+from tkinter import *
+from tkinter import messagebox, filedialog, ttk
 from PIL import Image, ImageTk
 from datetime import datetime
 
@@ -81,8 +82,21 @@ validation_generator = val_datagen.flow_from_directory(
 
 # Create the model
 model = Sequential()
+model.add(Conv2D(32, kernel_size=(3, 3), activation="relu", input_shape=(48, 48, 1)))
+model.add(Conv2D(64, kernel_size=(3, 3), activation="relu"))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Dropout(0.25))
 
+model.add(Conv2D(128, kernel_size=(3, 3), activation="relu"))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Conv2D(128, kernel_size=(3, 3), activation="relu"))
+model.add(MaxPooling2D(pool_size=(2, 2)))
+model.add(Dropout(0.25))
 
+model.add(Flatten())
+model.add(Dense(1024, activation="relu"))
+model.add(Dropout(0.5))
+model.add(Dense(7, activation="softmax"))
 
 # Defining CreateWidgets() function to create necessary tkinter widgets
 def createWidgets():
@@ -190,7 +204,7 @@ def ShowEmotionFeed():
                 cv2.LINE_AA,
             )
         # Display the resulting frame
-        videoImg = Image.fromarray(frame)
+        videoImg = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         # Creating object of PhotoImage() class to display the frame
         imgtk = ImageTk.PhotoImage(image=videoImg)
         # Configuring the label to display the frame
@@ -227,17 +241,21 @@ def StopCam():
     root.cameraLabel.place(relx=0.5, rely=0.5, anchor="center")
 
 # Defining StartCam() to start WEBCAM Preview
-def StartCam():
+# Defining StartEmotionCam() to start WEBCAM Preview
+def StartEmotionCam():
+    # Stop Previous Camera
+    StopCam()
+
     # Creating object of class VideoCapture with webcam index
     root.cap = cv2.VideoCapture(0)
     # Setting width and height
-    # width, height = 640, 480
-    root.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-    root.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+    # width_1, height_1 = 640, 480
+    root.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width_1)
+    root.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height_1)
 
     # Configuring the CAMBTN to display accordingly
     root.CAMBTN = ttk.Button(
-        root, text="STOP CAMERA", command=StopCam, style="my.TButton"
+        root, text="Stop Camera", command=StopCam, style="my.TButton"
     )
     root.CAMBTN.grid(row=5, column=4, pady=10, padx=10, sticky="nsew")
 
@@ -245,31 +263,18 @@ def StartCam():
     root.cameraLabel.config(text="")
 
     # Calling the ShowFeed() Function
-    ShowFeed()
-
-
+    ShowEmotionFeed()
+    
 def on_mouse(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:
         # Release the webcam and close all windows when the left mouse button is clicked
         root.cap.release()
         cv2.destroyAllWindows()
 
-
 if __name__ == "__main__":
-    model.add(Conv2D(32, kernel_size=(3, 3), activation="relu", input_shape=(48, 48, 1)))
-    model.add(Conv2D(64, kernel_size=(3, 3), activation="relu"))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.25))
-
-    model.add(Conv2D(128, kernel_size=(3, 3), activation="relu"))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Conv2D(128, kernel_size=(3, 3), activation="relu"))
-    model.add(MaxPooling2D(pool_size=(2, 2)))
-    model.add(Dropout(0.25))
-
-    model.add(Flatten())
-    model.add(Dense(1024, activation="relu"))
-    model.add(Dropout(0.5))
-    model.add(Dense(7, activation="softmax"))
+    
+    
     createWidgets()
     root.mainloop()
+    
+    

@@ -9,6 +9,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.layers import Dense, Dropout, Flatten, Conv2D, MaxPooling2D
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
+from tkinter import messagebox, filedialog, ttk
 from tkinter import *
 from PIL import Image, ImageTk
 from datetime import datetime
@@ -254,8 +255,11 @@ def StopCam():
     # root.cameraLabel.pack(fill="both", expand=True)
     root.cameraLabel.place(relx=0.5, rely=0.5, anchor="center")
 
-# Defining StartCam() to start WEBCAM Preview
-def StartCam():
+# Defining StartEmotionCam() to start WEBCAM Preview
+def StartEmotionCam():
+    # Stop Previous Camera
+    StopCam()
+
     # Creating object of class VideoCapture with webcam index
     root.cap = cv2.VideoCapture(0)
     # Setting width and height
@@ -265,7 +269,7 @@ def StartCam():
 
     # Configuring the CAMBTN to display accordingly
     root.CAMBTN = ttk.Button(
-        root, text="STOP CAMERA", command=StopCam, style="my.TButton"
+        root, text="Stop Camera", command=StopCam, style="my.TButton"
     )
     root.CAMBTN.grid(row=5, column=4, pady=10, padx=10, sticky="nsew")
 
@@ -273,8 +277,7 @@ def StartCam():
     root.cameraLabel.config(text="")
 
     # Calling the ShowFeed() Function
-    ShowFeed()
-
+    ShowEmotionFeed()
 
 def on_mouse(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:
