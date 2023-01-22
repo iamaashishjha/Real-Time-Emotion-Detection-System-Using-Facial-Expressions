@@ -21,9 +21,10 @@ root = tk.Tk()
 
 # Creating object of class VideoCapture with webcam index
 root.cap = cv2.VideoCapture(0)
-
+# bg_color = "#F0F8FF"
+# bg_color-hover = "#43C6DB"
 # Setting width and height
-width, height = 640, 480
+width, height = 980, 530
 root.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
 root.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 
@@ -31,24 +32,29 @@ root.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 root.title("Real Time Emotion Detection System")
 root.wm_iconbitmap("imgs/icon.ico")
 root.geometry(str(width) + "x" + str(height))
-root.resizable(True, True)
+root.resizable(False, False)
 
 root.configure(background="#F0F8FF")
 
 root.columnconfigure(4, weight=1)
 root.rowconfigure(4, weight=1)
 
-style = ttk.Style()
-style.configure(
-    "my.TButton",
-    background="lightblue",
-    font=("Roboto Black", 15),
-    width=13, relief="solid",
-    highlightthickness=2,
-    highlightbackground="lightgray",
-    shadow="in",
-    padding=10
-)
+# style = ttk.Style()
+button1_style = ttk.Style()
+button2_style = ttk.Style()
+button3_style = ttk.Style()
+button1_style.configure("B1.TButton", font=("Roboto Black", 15), background="#F0F8FF", width=13, padding=10)
+button2_style.configure("B2.TButton", font=("Roboto Black", 25), background="#F0F8FF", foreground="Red", width=13, padding=10)
+button3_style.configure("B3.TButton", font=("Roboto Black", 50), padding=10, justify="center", wraplength = int(width))
+
+# Creating a new frame to hold the buttons
+button_frame = ttk.Frame(root)
+button_frame.grid(row=0, column=1, rowspan=6, sticky="nsew")
+button_frame.grid_rowconfigure(0, weight=1)
+
+# Creating a new frame to hold the camera feed
+camera_frame = ttk.Frame(root)
+camera_frame.grid(row=0, column=0, rowspan=6, sticky="nsew")
 
 # Creating tkinter variables
 destPath = StringVar()
@@ -105,27 +111,164 @@ model.add(Dense(1024, activation="relu"))
 model.add(Dropout(0.5))
 model.add(Dense(7, activation="softmax"))
 
+
 # Defining CreateWidgets() function to create necessary tkinter widgets
 def createWidgets():
-    root.cameraLabel = ttk.Label(
-        root, text="Camera Feed", background="#F0F8FF", padding=10, wraplength = int(width)
-    )
-    root.cameraLabel.grid(row=4, column=4, sticky="nsew")
-    
-    # root.cameraLabel.config(
-    #     text="Camera Switched Off", font=("Roboto Black", 50), padding=10, background="#F0F8FF", justify="center", wraplength = int(width)
-    # )
-    
-    root.cameraLabel.place(relx=0.5, rely=0.5, anchor="center")
-    
-    root.CAMBTN = ttk.Button(
-        root, text="Stop Camera", command=StopCam, style="my.TButton"
-    )
-    root.CAMBTN.grid(row=5, column=4, pady=10, padx=10, sticky="nsew")
-    
     # Calling ShowFeed() function
     ShowEmotionFeed()
 
+# Defining StartCam() to start WEBCAM Preview
+def StartCam():
+    # Creating object of class VideoCapture with webcam index
+    root.cap = cv2.VideoCapture(0)
+    # Setting width and height
+    root.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+    root.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+
+    # Removing text message from the camera label
+    root.cameraLabel.config(text="")
+
+    # Calling the ShowFeed() Function
+    ShowFeed()
+    
+# Defining ShowFeed() function to display webcam feed in the cameraLabel;
+def ShowFeed():
+    # Capturing frame by frame
+    ret, frame = root.cap.read()
+    if ret:
+        # Flipping the frame vertically
+        frame = cv2.flip(frame, 1)
+        # Displaying date and time on the feed
+        cv2.putText(
+            frame,
+            datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+            (20, 30),
+            cv2.FONT_HERSHEY_DUPLEX,
+            0.5,
+            (0, 255, 255),
+        )
+        # Changing the frame color from BGR to RGB
+        cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+        # Creating an image memory from the above frame exporting array interface
+        videoImg = Image.fromarray(cv2image)
+        # Creating object of PhotoImage() class to display the frame
+        imgtk = ImageTk.PhotoImage(image=videoImg)
+        # Configuring the label to display the frame
+        root.cameraLabel.configure(image=imgtk)
+        # Keeping a reference
+        root.cameraLabel.imgtk = imgtk
+        # Calling the function after 10 milliseconds
+        root.cameraLabel.after(10, ShowFeed)
+    else:
+        # Configuring the label to display the frame
+        root.cameraLabel.configure(image="")
+    
+# Defining StartEmotionCam() to start WEBCAM Preview
+def StartFaceCam():
+    # Stop Previous Camera
+    StopCam()
+    # Creating object of class VideoCapture with webcam index
+    root.cap = cv2.VideoCapture(0)
+    # Setting width and height
+    root.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+    root.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+
+    # Removing text message from the camera label
+    root.cameraLabel.config(text="")
+
+    # Calling the ShowFeed() Function
+    ShowFaceFeed()
+    
+# Defining ShowFaceFeed() function to display webcam feed in the cameraLabel;
+def ShowFaceFeed():
+    # Capturing frame by frame
+    ret, frame = root.cap.read()
+    # Load the Haar cascade classifier
+    classifier = cv2.CascadeClassifier("haarcascade_frontalface_default.xml")
+    if ret:
+        # Flipping the frame vertically
+        frame = cv2.flip(frame, 1)
+        # Displaying date and time on the feed
+        cv2.putText(
+            frame,
+            datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+            (20, 30),
+            cv2.FONT_HERSHEY_DUPLEX,
+            0.5,
+            (0, 255, 255),
+        )
+        # Changing the frame color from BGR to RGB
+        cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
+        faces = classifier.detectMultiScale(cv2image)
+        # Draw a rectangle around the faces
+        for (x, y, w, h) in faces:
+            cv2.rectangle(frame, (x, y), (x + w, y + h), (0, 255, 0), 2)
+
+        # Display the resulting frame
+        videoImg = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA))
+        # Creating object of PhotoImage() class to display the frame
+        imgtk = ImageTk.PhotoImage(image=videoImg)
+        # Configuring the label to display the frame
+        root.cameraLabel.configure(image=imgtk)
+        # Keeping a reference
+        root.cameraLabel.imgtk = imgtk
+        # Calling the function after 10 milliseconds
+        root.cameraLabel.after(10, ShowFaceFeed)
+    else:
+        # Configuring the label to display the frame
+        root.cameraLabel.configure(image="")
+
+# Defining StartEmotionCam() to start WEBCAM Preview
+def StartEmotionCam():
+    # Stop Previous Camera
+    StopCam()
+    # Creating object of class VideoCapture with webcam index
+    root.cap = cv2.VideoCapture(0)
+    # Setting width and height
+    root.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
+    root.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
+    # Creating the camera label and placing it in the camera frame
+    root.cameraLabel = ttk.Label(
+        camera_frame, text="Camera Feed", style="B3.TButton"
+    )
+    root.cameraLabel.grid(row=0, column=0, pady=10, padx=10, sticky="nsew")
+    
+    # Configuring the Stop Camera button and placing it in the button frame
+    root.STPCAMBTN = ttk.Button(
+        button_frame, text="Stop Camera", command=StopCam, style="B2.TButton", state=ACTIVE
+    )
+    root.STPCAMBTN.grid(row=0, column=0, pady=10, padx=10, sticky="nsew")
+    
+    # Configuring the Emotion Cam button and placing it in the button frame
+    root.EMTNCAMBTN = ttk.Button(
+        button_frame, text="Emotion Cam", command=StartEmotionCam, style="B1.TButton", state=DISABLED
+    )
+    root.EMTNCAMBTN.grid(row=1, column=0, pady=10, padx=10, sticky="nsew")
+    
+    # Configuring the CAMBTN to display accordingly
+    root.FCCAMBTN = ttk.Button(
+        button_frame, text="Face Only", command=StartEmotionCam, style="B1.TButton", state=ACTIVE
+    )
+    root.FCCAMBTN.grid(row=2, column=0, pady=10, padx=10, sticky="nsew")
+    
+    # Configuring the TRNBTN to display accordingly
+    root.TRNBTN = ttk.Button(
+        button_frame, text="Camera Only", command=StartFaceCam, style="B1.TButton", state=ACTIVE
+    )
+    root.TRNBTN.grid(row=3, column=0, pady=10, padx=10, sticky="nsew")
+    
+    # Configuring the CAMBTN to display accordingly
+    root.CAMBTN = ttk.Button(
+        button_frame, text="Camera Only", command=StartFaceCam, style="B1.TButton", state=ACTIVE
+    )
+    root.CAMBTN.grid(row=4, column=0, pady=10, padx=10, sticky="nsew")
+    
+    # Removing text message from the camera label
+    root.cameraLabel.config(text="")
+
+    # Calling the ShowFeed() Function
+    ShowEmotionFeed()
+    
 # Defining ShowEmotionFeed() function to display webcam feed in the cameraLabel;
 def ShowEmotionFeed():
     # Capturing frame by frame
@@ -202,54 +345,106 @@ def ShowEmotionFeed():
 def StopCam():
     # Stopping the camera using release() method of cv2.VideoCapture()
     root.cap.release()
-    screen_width = root.winfo_screenwidth()
-    width, height = root.geometry().split("x")
-
-    # Configuring the CAMBTN to display accordingly
-    root.CAMBTN = ttk.Button(
-        root, text="Open Camera", command=StartEmotionCam, style="my.TButton"
-    )
-    root.CAMBTN.grid(row=5, column=4, padx=10, pady=10, sticky="nsew")
+    # Creating a new frame to hold the camera feed
+    camera_frame = ttk.Frame(root)
+    camera_frame.grid(row=0, column=0, rowspan=6, sticky="nsew")
     
     # Displaying text message in the camera label
-    root.cameraLabel.config(
-        text="Camera Switched Off", font=("Roboto Black", 50), padding=10, background="#F0F8FF", justify="center", wraplength = int(width)
+    root.cameraLabel = ttk.Label(
+        camera_frame, text="Camera Switched Off", style="B3.TButton"
     )
+    root.cameraLabel.grid(row=0, column=0, rowspan=6, pady=10, padx=10, sticky="nsew")
     
     root.cameraLabel.place(relx=0.5, rely=0.5, anchor="center")
-
-# Defining StartCam() to start WEBCAM Preview
-# Defining StartEmotionCam() to start WEBCAM Preview
-def StartEmotionCam():
-    # Stop Previous Camera
-    StopCam()
-
-    # Creating object of class VideoCapture with webcam index
-    root.cap = cv2.VideoCapture(0)
-    # Setting width and height
-    root.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-    root.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-
+    
+    # Creating the camera label and placing it in the camera frame
+    root.cameraLabel = ttk.Label(
+        camera_frame, text="Camera Feed", style="B3.TButton"
+    )
+    root.cameraLabel.grid(row=0, column=0, pady=10, padx=10, sticky="nsew")
+    
+    # Configuring the Stop Camera button and placing it in the button frame
+    root.STPCAMBTN = ttk.Button(
+        button_frame, text="Stop Camera", command=StopCam, style="B2.TButton", state=DISABLED
+    )
+    root.STPCAMBTN.grid(row=0, column=0, pady=10, padx=10, sticky="nsew")
+    
+    # Configuring the Emotion Cam button and placing it in the button frame
+    root.EMTNCAMBTN = ttk.Button(
+        button_frame, text="Emotion Cam", command=StartEmotionCam, style="B1.TButton", state=ACTIVE
+    )
+    root.EMTNCAMBTN.grid(row=1, column=0, pady=10, padx=10, sticky="nsew")
+    
+    # Configuring the CAMBTN to display accordingly
+    root.FCCAMBTN = ttk.Button(
+        button_frame, text="Face Only", command=StartEmotionCam, style="B1.TButton", state=ACTIVE
+    )
+    root.FCCAMBTN.grid(row=2, column=0, pady=10, padx=10, sticky="nsew")
+    
+    # Configuring the TRNBTN to display accordingly
+    root.TRNBTN = ttk.Button(
+        button_frame, text="Camera Only", command=StartFaceCam, style="B1.TButton", state=ACTIVE
+    )
+    root.TRNBTN.grid(row=3, column=0, pady=10, padx=10, sticky="nsew")
+    
     # Configuring the CAMBTN to display accordingly
     root.CAMBTN = ttk.Button(
-        root, text="Stop Camera", command=StopCam, style="my.TButton"
+        button_frame, text="Camera Only", command=StartFaceCam, style="B1.TButton", state=ACTIVE
     )
-    root.CAMBTN.grid(row=5, column=4, pady=10, padx=10, sticky="nsew")
+    root.CAMBTN.grid(row=4, column=0, pady=10, padx=10, sticky="nsew")
 
-    # Removing text message from the camera label
-    root.cameraLabel.config(text="")
-
-    # Calling the ShowFeed() Function
-    ShowEmotionFeed()
-    
 def on_mouse(event, x, y, flags, param):
     if event == cv2.EVENT_LBUTTONDOWN:
         # Release the webcam and close all windows when the left mouse button is clicked
         root.cap.release()
         cv2.destroyAllWindows()
 
+def DisplaySetup():
+    root.columnconfigure(1, weight=1)
+    
+    # Creating the camera label and placing it in the camera frame
+    root.cameraLabel = ttk.Label(
+        camera_frame, text="Camera Feed", style="B3.TButton"
+    )
+    root.cameraLabel.grid(row=0, column=0, pady=10, padx=10, sticky="nsew")
+    
+    # Configuring the Stop Camera button and placing it in the button frame
+    root.STPCAMBTN = ttk.Button(
+        button_frame, text="Stop Camera", command=StopCam, style="B2.TButton", state=ACTIVE
+    )
+    root.STPCAMBTN.grid(row=0, column=0, pady=10, padx=10, sticky="nsew")
+    
+    # Configuring the Emotion Cam button and placing it in the button frame
+    root.EMTNCAMBTN = ttk.Button(
+        button_frame, text="Emotion Cam", command=StartEmotionCam, style="B1.TButton", state=DISABLED
+    )
+    root.EMTNCAMBTN.grid(row=1, column=0, pady=10, padx=10, sticky="nsew")
+    
+    # Configuring the CAMBTN to display accordingly
+    root.FCCAMBTN = ttk.Button(
+        button_frame, text="Face Only", command=StartEmotionCam, style="B1.TButton", state=ACTIVE
+    )
+    root.FCCAMBTN.grid(row=2, column=0, pady=10, padx=10, sticky="nsew")
+    
+    # Configuring the TRNBTN to display accordingly
+    root.TRNBTN = ttk.Button(
+        button_frame, text="Camera Only", command=StartFaceCam, style="B1.TButton", state=ACTIVE
+    )
+    root.TRNBTN.grid(row=3, column=0, pady=10, padx=10, sticky="nsew")
+    
+    # Configuring the CAMBTN to display accordingly
+    root.CAMBTN = ttk.Button(
+        button_frame, text="Camera Only", command=StartFaceCam, style="B1.TButton", state=ACTIVE
+    )
+    root.CAMBTN.grid(row=4, column=0, pady=10, padx=10, sticky="nsew")
+    
+    # Calling ShowFeed() function
+    ShowEmotionFeed()
+
+
 if __name__ == "__main__":
-    createWidgets()
+    DisplaySetup()
+    # createWidgets()
     root.mainloop()
     
     
