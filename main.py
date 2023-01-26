@@ -112,21 +112,55 @@ model.add(Dropout(0.5))
 model.add(Dense(7, activation="softmax"))
 
 
-# Defining CreateWidgets() function to create necessary tkinter widgets
-def createWidgets():
-    # Calling ShowFeed() function
-    ShowEmotionFeed()
-
 # Defining StartCam() to start WEBCAM Preview
 def StartCam():
+    # Stop Previous Camera
+    StopCam()
+    # Creating a new frame to hold the camera feed
+    camera_frame = ttk.Frame(root)
+    camera_frame.grid(row=0, column=0, rowspan=6, sticky="nsew")
     # Creating object of class VideoCapture with webcam index
     root.cap = cv2.VideoCapture(0)
+    
     # Setting width and height
     root.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
     root.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
 
-    # Removing text message from the camera label
-    root.cameraLabel.config(text="")
+    # Creating the camera label and placing it in the camera frame
+    root.cameraLabel = ttk.Label(
+        camera_frame, text="", style="B3.TButton"
+    )
+    root.cameraLabel.grid(row=0, column=0, pady=10, padx=10, sticky="nsew")
+    
+    # Configuring the Stop Camera button and placing it in the button frame
+    root.STPCAMBTN = ttk.Button(
+        button_frame, text="Stop Camera", command=StopCam, style="B2.TButton", state=ACTIVE
+    )
+    root.STPCAMBTN.grid(row=0, column=0, pady=10, padx=10, sticky="nsew")
+    
+    # Configuring the Emotion Cam button and placing it in the button frame
+    root.EMTNCAMBTN = ttk.Button(
+        button_frame, text="Emotion Cam", command=StartEmotionCam, style="B1.TButton", state=ACTIVE
+    )
+    root.EMTNCAMBTN.grid(row=1, column=0, pady=10, padx=10, sticky="nsew")
+    
+    # Configuring the CAMBTN to display accordingly
+    root.FCCAMBTN = ttk.Button(
+        button_frame, text="Face Only", command=StartFaceCam, style="B1.TButton", state=ACTIVE
+    )
+    root.FCCAMBTN.grid(row=2, column=0, pady=10, padx=10, sticky="nsew")
+    
+    # Configuring the TRNBTN to display accordingly
+    root.TRNBTN = ttk.Button(
+        button_frame, text="Camera Only", command=StartCam, style="B1.TButton", state=DISABLED
+    )
+    root.TRNBTN.grid(row=3, column=0, pady=10, padx=10, sticky="nsew")
+    
+    # Configuring the CAMBTN to display accordingly
+    root.CAMBTN = ttk.Button(
+        button_frame, text="Camera Only", command=StartCam, style="B1.TButton", state=DISABLED
+    )
+    root.CAMBTN.grid(row=4, column=0, pady=10, padx=10, sticky="nsew")
 
     # Calling the ShowFeed() Function
     ShowFeed()
@@ -138,15 +172,9 @@ def ShowFeed():
     if ret:
         # Flipping the frame vertically
         frame = cv2.flip(frame, 1)
-        # Displaying date and time on the feed
-        cv2.putText(
-            frame,
-            datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-            (20, 30),
-            cv2.FONT_HERSHEY_DUPLEX,
-            0.5,
-            (0, 255, 255),
-        )
+        # Display text
+        putText(frame, (0, 255, 255), "Only Camera")
+        
         # Changing the frame color from BGR to RGB
         cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
         # Creating an image memory from the above frame exporting array interface
@@ -167,14 +195,51 @@ def ShowFeed():
 def StartFaceCam():
     # Stop Previous Camera
     StopCam()
+    
+    # Creating a new frame to hold the camera feed
+    camera_frame = ttk.Frame(root)
+    camera_frame.grid(row=0, column=0, rowspan=6, sticky="nsew")
     # Creating object of class VideoCapture with webcam index
     root.cap = cv2.VideoCapture(0)
     # Setting width and height
     root.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
     root.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-
-    # Removing text message from the camera label
-    root.cameraLabel.config(text="")
+    
+    # Creating the camera label and placing it in the camera frame
+    root.cameraLabel = ttk.Label(
+        camera_frame, text="", style="B3.TButton"
+    )
+    root.cameraLabel.grid(row=0, column=0, pady=10, padx=10, sticky="nsew")
+    
+    # Configuring the Stop Camera button and placing it in the button frame
+    root.STPCAMBTN = ttk.Button(
+        button_frame, text="Stop Camera", command=StopCam, style="B2.TButton", state=ACTIVE
+    )
+    root.STPCAMBTN.grid(row=0, column=0, pady=10, padx=10, sticky="nsew")
+    
+    # Configuring the Emotion Cam button and placing it in the button frame
+    root.EMTNCAMBTN = ttk.Button(
+        button_frame, text="Emotion Cam", command=StartEmotionCam, style="B1.TButton", state=ACTIVE
+    )
+    root.EMTNCAMBTN.grid(row=1, column=0, pady=10, padx=10, sticky="nsew")
+    
+    # Configuring the CAMBTN to display accordingly
+    root.FCCAMBTN = ttk.Button(
+        button_frame, text="Face Only", command=StartFaceCam, style="B1.TButton", state=DISABLED
+    )
+    root.FCCAMBTN.grid(row=2, column=0, pady=10, padx=10, sticky="nsew")
+    
+    # Configuring the TRNBTN to display accordingly
+    root.TRNBTN = ttk.Button(
+        button_frame, text="Camera Only", command=StartCam, style="B1.TButton", state=ACTIVE
+    )
+    root.TRNBTN.grid(row=3, column=0, pady=10, padx=10, sticky="nsew")
+    
+    # Configuring the CAMBTN to display accordingly
+    root.CAMBTN = ttk.Button(
+        button_frame, text="Camera Only", command=StartCam, style="B1.TButton", state=ACTIVE
+    )
+    root.CAMBTN.grid(row=4, column=0, pady=10, padx=10, sticky="nsew")
 
     # Calling the ShowFeed() Function
     ShowFaceFeed()
@@ -188,15 +253,10 @@ def ShowFaceFeed():
     if ret:
         # Flipping the frame vertically
         frame = cv2.flip(frame, 1)
-        # Displaying date and time on the feed
-        cv2.putText(
-            frame,
-            datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-            (20, 30),
-            cv2.FONT_HERSHEY_DUPLEX,
-            0.5,
-            (0, 255, 255),
-        )
+        
+        # Display text
+        putText(frame,(0, 255, 255), "Face Detection Camera")
+
         # Changing the frame color from BGR to RGB
         cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGB)
         faces = classifier.detectMultiScale(cv2image)
@@ -222,17 +282,17 @@ def ShowFaceFeed():
 def StartEmotionCam():
     # Stop Previous Camera
     StopCam()
+        
+    # Removing text message from the camera label
+    root.cameraLabel.config(text="")
+    # Creating a new frame to hold the camera feed
+    camera_frame = ttk.Frame(root)
+    camera_frame.grid(row=0, column=0, rowspan=6, sticky="nsew")
     # Creating object of class VideoCapture with webcam index
     root.cap = cv2.VideoCapture(0)
     # Setting width and height
     root.cap.set(cv2.CAP_PROP_FRAME_WIDTH, width)
     root.cap.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-    # Creating the camera label and placing it in the camera frame
-    root.cameraLabel = ttk.Label(
-        camera_frame, text="Camera Feed", style="B3.TButton"
-    )
-    root.cameraLabel.grid(row=0, column=0, pady=10, padx=10, sticky="nsew")
-    
     # Configuring the Stop Camera button and placing it in the button frame
     root.STPCAMBTN = ttk.Button(
         button_frame, text="Stop Camera", command=StopCam, style="B2.TButton", state=ACTIVE
@@ -253,13 +313,13 @@ def StartEmotionCam():
     
     # Configuring the TRNBTN to display accordingly
     root.TRNBTN = ttk.Button(
-        button_frame, text="Camera Only", command=StartFaceCam, style="B1.TButton", state=ACTIVE
+        button_frame, text="Camera Only", command=StartCam, style="B1.TButton", state=ACTIVE
     )
     root.TRNBTN.grid(row=3, column=0, pady=10, padx=10, sticky="nsew")
     
     # Configuring the CAMBTN to display accordingly
     root.CAMBTN = ttk.Button(
-        button_frame, text="Camera Only", command=StartFaceCam, style="B1.TButton", state=ACTIVE
+        button_frame, text="Camera Only", command=StartCam, style="B1.TButton", state=ACTIVE
     )
     root.CAMBTN.grid(row=4, column=0, pady=10, padx=10, sticky="nsew")
     
@@ -272,7 +332,7 @@ def StartEmotionCam():
 # Defining ShowEmotionFeed() function to display webcam feed in the cameraLabel;
 def ShowEmotionFeed():
     # Capturing frame by frame
-    model.load_weights("model.h5")
+    model.load_weights("emotion_model.h5")
 
     # prevents openCL usage and unnecessary logging messages
     cv2.ocl.setUseOpenCL(False)
@@ -295,15 +355,8 @@ def ShowEmotionFeed():
     if ret:
         # Flipping the frame vertically
         frame = cv2.flip(frame, 1)
-        # Displaying date and time on the feed
-        cv2.putText(
-            frame,
-            datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
-            (20, 30),
-            cv2.FONT_HERSHEY_DUPLEX,
-            0.5,
-            (0, 255, 255),
-        )
+        
+        putText(frame,(0, 255, 255), "Real Time Emotion Detection Camera")
         # Changing the frame color from BGR to RGB
         cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
         faces = facecasc.detectMultiScale(cv2image, scaleFactor=1.3, minNeighbors=5)
@@ -327,6 +380,7 @@ def ShowEmotionFeed():
                 2,
                 cv2.LINE_AA,
             )
+
         # Display the resulting frame
         videoImg = Image.fromarray(cv2.cvtColor(frame, cv2.COLOR_BGR2RGB))
         # Creating object of PhotoImage() class to display the frame
@@ -348,12 +402,6 @@ def StopCam():
     # Creating a new frame to hold the camera feed
     camera_frame = ttk.Frame(root)
     camera_frame.grid(row=0, column=0, rowspan=6, sticky="nsew")
-    
-    # Displaying text message in the camera label
-    root.cameraLabel = ttk.Label(
-        camera_frame, text="Camera Switched Off", style="B3.TButton"
-    )
-    root.cameraLabel.grid(row=0, column=0, rowspan=6, pady=10, padx=10, sticky="nsew")
     
     root.cameraLabel.place(relx=0.5, rely=0.5, anchor="center")
     
@@ -377,13 +425,13 @@ def StopCam():
     
     # Configuring the CAMBTN to display accordingly
     root.FCCAMBTN = ttk.Button(
-        button_frame, text="Face Only", command=StartEmotionCam, style="B1.TButton", state=ACTIVE
+        button_frame, text="Face Only", command=StartFaceCam, style="B1.TButton", state=ACTIVE
     )
     root.FCCAMBTN.grid(row=2, column=0, pady=10, padx=10, sticky="nsew")
     
     # Configuring the TRNBTN to display accordingly
     root.TRNBTN = ttk.Button(
-        button_frame, text="Camera Only", command=StartFaceCam, style="B1.TButton", state=ACTIVE
+        button_frame, text="Camera Only", command=StartCam, style="B1.TButton", state=ACTIVE
     )
     root.TRNBTN.grid(row=3, column=0, pady=10, padx=10, sticky="nsew")
     
@@ -393,11 +441,39 @@ def StopCam():
     )
     root.CAMBTN.grid(row=4, column=0, pady=10, padx=10, sticky="nsew")
 
-def on_mouse(event, x, y, flags, param):
-    if event == cv2.EVENT_LBUTTONDOWN:
-        # Release the webcam and close all windows when the left mouse button is clicked
-        root.cap.release()
-        cv2.destroyAllWindows()
+def putText(frame, color, text):
+    # Get frame dimensions
+    # height, width, _ = frame.shape
+    width, height = 980, 530
+    # Position date and time at the top of the screen
+    date_x = int(20)
+    date_y = int(30)
+
+    # Position text at the bottom center of the screen
+    text_x = int(80)
+    text_y = int(height - 20)
+    
+    # Displaying date and time on the feed
+    cv2.putText(
+        frame,
+        datetime.now().strftime("%d/%m/%Y %H:%M:%S"),
+        (date_x, date_y),
+        cv2.FONT_HERSHEY_DUPLEX,
+        0.5,
+        (0, 255, 255),
+    )
+    
+    # Display text
+    cv2.putText(
+            frame,
+            text,
+            (120, 130),
+            cv2.FONT_HERSHEY_DUPLEX,
+            1,
+            color,
+            2,
+            cv2.LINE_AA,
+    )
 
 def DisplaySetup():
     root.columnconfigure(1, weight=1)
@@ -444,7 +520,6 @@ def DisplaySetup():
 
 if __name__ == "__main__":
     DisplaySetup()
-    # createWidgets()
     root.mainloop()
     
     
