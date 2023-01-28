@@ -17,12 +17,23 @@ from datetime import datetime
 
 os.environ["TF_CPP_MIN_LOG_LEVEL"] = "2" #LOG_LEVEL == 2 FOR WARNING ONLY
 
-DATA_PATH = 'data/test'
-CATEGORIES = os.listdir(DATA_PATH)
-LABELS = [i for i in range(len(CATEGORIES))]
-LABELS_DICTIONARY = dict(zip(CATEGORIES, LABELS))
+DATA_PATH = 'data/labels.txt'
+DATA_PATH_TRAIN = 'data/train'
+# Open the file
+with open(DATA_PATH, 'r') as file:
+    # Read the contents of the file and split it into lines
+    LINES = file.read().splitlines()
 
-print(CATEGORIES)
+# Create an empty dictionary
+LABELS = {}
+# # Iterate over the lines
+for LINE in LINES:
+    LABELS[LINE] = LINE
+
+INDEX = [i for i in range(len(LABELS))]
+LABELS_DICTIONARY = dict(zip(INDEX, LABELS))
+
+print(INDEX)
 print(LABELS)
 print(LABELS_DICTIONARY)
 
@@ -185,10 +196,12 @@ def ShowEmotionFeed():
             image_pixels /= 255
             predictions = model.predict(image_pixels)
             max_index = np.argmax(predictions[0])
+            emotion_detection = LABELS_DICTIONARY
             emotion_prediction = emotion_detection[max_index]
             emotion_prediction_confidence = str(np.round(np.max(predictions[0])*100,1))+ "%"
-            LABEL_EMOTION = 'Emotion: {}'.format(emotion_prediction)
+            # LABEL_EMOTION = 'Emotion: {}'.format(emotion_prediction)
             # LABEL_CONFIDENCE = 'Confidence: {}'.format(emotion_prediction_confidence)
+            LABEL_EMOTION = emotion_prediction
             LABEL_CONFIDENCE = emotion_prediction_confidence
             
             violation_text_dimension = cv2.getTextSize(LABEL_CONFIDENCE,FONT,FONT_SCALE,FONT_THICKNESS)[0]
@@ -319,7 +332,7 @@ def trainModel():
     
     
 if __name__ == "__main__":
-    # DisplayFeed()
+    DisplayFeed()
     root.mainloop()
     
     
