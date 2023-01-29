@@ -15,37 +15,35 @@ This project aims to classify the emotion on a person's face into one of **seven
 
 ```bash
 git clone https://github.com/iamaashishjha/Real-Time-Emotion-Detection-System-Using-Facial-Expressions.git
-cd Emotion-detection
+cd Real-Time-Emotion-Detection-System-Using-Facial-Expressions
 ```
 
-* Download the FER-2013 dataset inside the `src` folder.
+* Download the FER-2013 dataset (train and test directory) inside the `data` folder.
 
 * If you want to train this model, use:  
 
 ```bash
-cd src
-python emotions.py --mode train
+python main.py --mode train // To Train the model
+
 ```
 
 <!-- * If you want to view the predictions without training again, you can download the pre-trained model from [here](https://drive.google.com/file/d/1FUn0XNOzf-nQV7QjbBPA6-8GLoHNNgv-/view?usp=sharing) and then run:   -->
+* If you want to run this app, use:  
 
 ```bash
-cd src
-python emotions.py --mode display
+python main.py // To Run the App
 ```
 
-* The folder structure is of the form:  
-  src:
+* The folder structure is of the form: 
   * data (folder)
-  * `emotions.py` (file)
+  * `main.py` (file)
   * `haarcascade_frontalface_default.xml` (file)
-  * `model.h5` (file)
+  * `model/model.h5` (file)
+  * `imgs/icon.ico` (image)
 
 ## Data Preparation (optional)
 
-* The [original FER2013 dataset in Kaggle](https://www.kaggle.com/deadskull7/fer2013) is available as a single csv file. I had converted into a dataset of images in the PNG format for training/testing.
-
-* In case you are looking to experiment with new datasets, you may have to deal with data in the csv format. I have provided the code I wrote for data preprocessing in the `dataset_prepare.py` file which can be used for reference.
+* The [original FER2013 dataset in Kaggle](https://www.kaggle.com/datasets/astraszab/facial-expression-dataset-image-folders-fer2013) is available as a  dataset of images in the PNG format for training/testing.
 
 ## Algorithm
 

@@ -1,2 +1,5 @@
-/venv
+
+/rtedsenv
 /data
+/dist
+/build
