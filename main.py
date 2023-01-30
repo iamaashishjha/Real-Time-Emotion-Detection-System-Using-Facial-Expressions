@@ -1,3 +1,7 @@
+
+############################################################################
+###Importing libraries  
+############################################################################  
 import cv2, os, argparse
 import numpy as np
 import matplotlib.pyplot as plt
@@ -11,11 +15,11 @@ from tensorflow.keras.layers import Dense, Activation, Dropout, Conv2D, MaxPooli
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing import image
 from tensorflow.keras.preprocessing.image import ImageDataGenerator, load_img,img_to_array
-
 from tkinter import *
 from tkinter import messagebox, filedialog, ttk
 from PIL import Image, ImageTk
 from datetime import datetime
+
 
 ############################################################################
 ##Variables
